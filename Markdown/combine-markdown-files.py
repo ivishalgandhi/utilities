@@ -6,6 +6,7 @@ from datetime import datetime
 def combine_markdown_files(directory, file_pattern, combined_file, created_after=None, exclude_frontmatter=False):
     # Initialize an empty list to store the contents of the markdown files
     markdown_contents = []
+    delimiter = "---"
 
     # Use the glob library to find all files in the specified directory that match the given file pattern
     for filename in glob.glob(os.path.join(directory, file_pattern), recursive=True):
@@ -18,8 +19,10 @@ def combine_markdown_files(directory, file_pattern, combined_file, created_after
             # Read the contents of the file
             contents = file.read()
             if exclude_frontmatter:
-                # Split the contents of the file into the frontmatter and the rest of the content
-                frontmatter, content = contents.split("—-", 1)
+                frontmatter_end = contents.find(delimiter)
+                if frontmatter_end == -1:
+                    continue
+                content = contents[frontmatter_end + len(delimiter):]
             else:
                 content = contents
             # Add the file name and create date as an h2 header at the top of the content
