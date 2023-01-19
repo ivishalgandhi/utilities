@@ -3,7 +3,7 @@ import glob
 import argparse
 from datetime import datetime
 
-def combine_markdown_files(directory, file_pattern, combined_file, created_after=None):
+def combine_markdown_files(directory, file_pattern, combined_file, created_after=None, exclude_frontmatter=False):
     # Initialize an empty list to store the contents of the markdown files
     markdown_contents = []
 
@@ -17,8 +17,11 @@ def combine_markdown_files(directory, file_pattern, combined_file, created_after
         with open(filename, 'r') as file:
             # Read the contents of the file
             contents = file.read()
-            # Split the contents of the file into the frontmatter and the rest of the content
-            frontmatter, content = contents.split("---", 1)
+            if exclude_frontmatter:
+                # Split the contents of the file into the frontmatter and the rest of the content
+                frontmatter, content = contents.split("—-", 1)
+            else:
+                content = contents
             # Add the file name and create date as an h2 header at the top of the content
             content = f"## {os.path.basename(filename)} ({create_time.strftime('%Y-%m-%d')})\n\n{content}"
             # Add the contents of the file to the list
@@ -37,9 +40,10 @@ if __name__ == "__main__":
     parser.add_argument("file_pattern", help="pattern to match markdown file name")
     parser.add_argument("combined_file", help="combined markdown file name")
     parser.add_argument("-c", "--created_after", help="include files created after this date in yyyy-mm-dd format")
+    parser.add_argument("-ef", "--exclude_frontmatter", help="exclude frontmatter from markdown files", action="store_true")
     args = parser.parse_args()
     if args.created_after:
         created_after = datetime.strptime(args.created_after, '%Y-%m-%d')
     else:
         created_after = None
-    combine_markdown_files(args.directory, args.file_pattern, args.combined_file, created_after)
+    combine_markdown_files(args.directory, args.file_pattern, args.combined_file, created_after, args.exclude_frontmatter)
